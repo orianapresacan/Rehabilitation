@@ -11,7 +11,6 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="static/styles.css">
-
 </head>
 <body class="bg-white">
     <!-- Header -->
@@ -37,10 +36,10 @@
         <nav id="sidebar" class="bg-dark">
             <ul class="list-unstyled components">
                 <li>
-                    <a href="#" class="text-white">Patient insights</a>
+                    <a href="#" class="text-white" onclick="togglePanel('panel-insights')">Patient insights</a>
                 </li>
                 <li>
-                    <a href="#" class="text-white">Patient registration</a>
+                    <a href="#" class="text-white" onclick="togglePanel('panel-registration')">Patient registration</a>
                 </li>
                 <!-- ... other options ... -->
             </ul>
@@ -48,32 +47,75 @@
 
         <!-- Main content area -->
         <div id="content">
-            <!-- Patient Dropdown and Date/Week Selector -->
-            <div class="form-group">
-                <label for="patient-dropdown">Select a Patient:</label>
-                <select id="patient-dropdown" class="form-control">
-                    <!-- Patient names will be populated here -->
-                </select>
+            <div id="panel-insights">
+                <!-- Patient Dropdown and Date/Week Selector -->
+                <div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label for="patient-dropdown">Select a Patient:</label>
+                        <select id="patient-dropdown" class="form-control">
+                            <!-- Patient names will be populated here -->
+                        </select>
+                    </div>
+                    <div class="form-group col-md-3">
+                        <label for="week-selector">Select a Week:</label>
+                        <input type="week" id="week-selector" class="form-control">
+                    </div>
+                    <div class="form-group col-md-3">
+                        <button id="run-button" class="btn btn-primary btn-block my-3">RUN</button>
+                    </div>
+                </div>
+                <!-- Add an iframe element to display the response content for Activities -->
+                <iframe id="diagram-iframe" width="100%" height="400" frameborder="0"></iframe>
+                <!-- Add an iframe element to display the response content for Summary -->
+                <iframe id="summary-iframe" width="100%" height="400" frameborder="0"></iframe>
             </div>
-
-			<div class="form-group">
-                <label for="week-selector">Select a Week:</label>
-                <input type="week" id="week-selector" class="form-control">
-            </div>
-
-            <button id="run-button" class="btn btn-primary">RUN</button>
-
-            <!-- Add an iframe element to display the response content for Activities -->
-			<iframe id="diagram-iframe" width="100%" height="400" frameborder="0"></iframe>
-			
-			<!-- Add an iframe element to display the response content for Summary -->
-			<iframe id="summary-iframe" width="100%" height="400" frameborder="0"></iframe>
-
-			
+            <div id="panel-registration" style="display: none;">
+				<!-- Registration Form -->
+				<form>
+					<div class="form-group col-md-4">
+						<label for="patient-name">Name:</label>
+						<input type="text" id="patient-name" class="form-control" oninput="updateUsername()">
+					</div>
+					<div class="form-group col-md-4">
+						<label for="patient-last-name">Last Name:</label>
+						<input type="text" id="patient-last-name" class="form-control" oninput="updateUsername()">
+					</div>
+					<div class="form-group col-md-4">
+						<label for="patient-username">Username:</label>
+						<input type="text" id="patient-username" class="form-control" readonly>
+					</div>
+					<div class="form-group col-md-4">
+						<label for="device-assigned">Device assigned:</label>
+						<select id="device-assigned" class="form-control">
+							<option value="device1">Device 1</option>
+							<option value="device2">Device 2</option>
+							<!-- Add more options as needed -->
+						</select>
+					</div>
+					<div class="form-group col-md-4">
+						<label for="hospital-unit">Hospital unit:</label>
+						<select id="hospital-unit" class="form-control">
+							<option value="unit1">Unit 1</option>
+							<option value="unit2">Unit 2</option>
+							<!-- Add more options as needed -->
+						</select>
+					</div>
+					<div class="form-group col-md-4">
+						<label for="doctor">GP or Physical therapist:</label>
+						<input type="text" id="doctor" class="form-control">
+					</div>
+				</form>
+				<div class="form-group col-md-3 mt-2">
+					<div class="d-flex justify-content-between">
+						<button id="save-button" class="btn btn-primary btn-block my-3">SAVE</button>
+						<button id="cancel-button" class="btn btn-danger btn-block my-3" onclick="clearForm()">CANCEL</button>
+					</div>
+				</div>
+			</div>
         </div>
     </div>
-	
-	<script>
+
+    <script>
         // Function to fetch patient names and populate the dropdown
         function fetchPatientNames() {
             fetch('https://test.innovent.site/innovent/patients', {
@@ -95,28 +137,99 @@
                     console.error('Error fetching patient names:', error);
                 });
         }
+
+        function handleRunButtonClick() {
+            const selectedPatientName = document.getElementById('patient-dropdown').value;
+            const selectedWeek = document.getElementById('week-selector').value;
+            const getActivitiesURL = `https://test.innovent.site/innovent/getactivities?username=${selectedPatientName}&week=${selectedWeek}`;
+            const getSummaryURL = `https://cdn.kicksdigital.com/depictdatastudio.com/2023/02/GGE_Sample-Graphs.jpg`;
+
+            // Get the iframe elements
+            const diagramIframe = document.getElementById('diagram-iframe');
+            const summaryIframe = document.getElementById('summary-iframe');
+
+            // Set the sources of the iframes
+            diagramIframe.src = getActivitiesURL;
+            summaryIframe.src = getSummaryURL;
+        }
+
+        function togglePanel(panelId) {
+            const panels = ['panel-insights', 'panel-registration'];
+            panels.forEach(panel => {
+                const element = document.getElementById(panel);
+                element.style.display = panel === panelId ? 'block' : 'none';
+            });
+        }
+
+        function clearForm() {
+            document.getElementById('patient-name').value = '';
+            document.getElementById('patient-last-name').value = '';
+            document.getElementById('patient-username').value = '';
+            document.getElementById('device-assigned').value = '';
+            document.getElementById('hospital-unit').value = '';
+            document.getElementById('doctor').value = '';
+        }
+
+        // Initialize patient dropdown and attach button click event
+        document.addEventListener('DOMContentLoaded', () => {
+            fetchPatientNames();
+            const runButton = document.getElementById('run-button');
+            runButton.addEventListener('click', handleRunButtonClick);
+        });
 		
-		function handleRunButtonClick() {
-			const selectedPatientName = document.getElementById('patient-dropdown').value;
-			const selectedWeek = document.getElementById('week-selector').value;
-			const getActivitiesURL = `https://test.innovent.site/innovent/getactivities?username=${selectedPatientName}&week=${selectedWeek}`;
-			const getSummaryURL = `https://cdn.kicksdigital.com/depictdatastudio.com/2023/02/GGE_Sample-Graphs.jpg`;
-
-			// Get the iframe elements
-			const diagramIframe = document.getElementById('diagram-iframe');
-			const summaryIframe = document.getElementById('summary-iframe');
-
-			// Set the sources of the iframes
-			diagramIframe.src = getActivitiesURL;
-			summaryIframe.src = getSummaryURL;
+		const saveButton = document.getElementById('save-button');
+		saveButton.addEventListener('click', handleSaveButtonClick);
+		
+		// Function to auto-fill the Username based on Name and Last Name
+		function updateUsername() {
+			const firstName = document.getElementById('patient-name').value.toLowerCase();
+			const lastName = document.getElementById('patient-last-name').value.toLowerCase();
+			const username = firstName.charAt(0) + lastName.replace(/ /g, '');
+			document.getElementById('patient-username').value = username;
 		}
+		
+		function handleSaveButtonClick() {
+			const fullName = document.getElementById('patient-name').value + ' ' + document.getElementById('patient-last-name').value;
+			const userName = document.getElementById('patient-username').value;
+			const deviceAssigned = document.getElementById('device-assigned').value;
+			const hospitalUnit = document.getElementById('hospital-unit').value;
+			const doctor = document.getElementById('doctor').value;
 
-		document.addEventListener('DOMContentLoaded', () => {
-			fetchPatientNames();
+			const data = {
+				fullname: fullName,
+				username: userName,
+				device: deviceAssigned,
+				hospital: hospitalUnit,
+				doctor: doctor,
+			};
 
-			const runButton = document.getElementById('run-button');
-			runButton.addEventListener('click', handleRunButtonClick);
-		});
+			fetch('https://test.innovent.site/innovent/registerpatient', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'apikey': 'safe',
+				},
+				body: JSON.stringify(data),
+			})
+				.then(response => {
+					if (response.status === 200) {
+						// Handle a successful response
+						showSuccessMessage('Patient data successfully saved.');
+						clearForm();
+					} else {
+						throw new Error('Failed to save patient data.');
+					}
+				})
+				.catch(error => {
+					console.error('Error sending data:', error);
+				});
+		}
+		
+		function showSuccessMessage(message) {
+			// Display a pop-up alert with the success message
+			alert(message);
+		}
+		
     </script>
 </body>
 </html>
