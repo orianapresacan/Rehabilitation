@@ -229,20 +229,74 @@ static const char* getClassName(neuton_u16_t classIndex) {
 }
 
 void sendDataViaBLE() {
-
   if (millis() - lastDataSentTime < 10 * 1 * 1000) {
     return;
   }
-  // Cast the struct directly to a byte array and send it
-  uint8_t* buffer = (uint8_t*)&activityDurations;
 
-  if (customCharacteristic.writeValue(buffer, sizeof(SensorData))) {
-    Serial.println("Sent");
-    // If data is successfully sent, reset the struct
-    memset(&activityDurations, 0, sizeof(activityDurations));
-    lastDataSentTime = millis();
+  String jsonData = "{";
+  // Add fields to the JSON message only if their values are not-zero
+  if (activityDurations.random != 0) {
+    jsonData += "\"rd\":" + String(activityDurations.random);
   }
+  if (activityDurations.clapping != 0) {
+    if (activityDurations.random != 0) {
+      jsonData += ",";
+    }
+    jsonData += "\"cH\":" + String(activityDurations.clapping);
+  }
+  if (activityDurations.brushingTeeth != 0) {
+    if (activityDurations.random != 0 || activityDurations.clapping != 0) {
+      jsonData += ",";
+    }
+    jsonData += "\"bT\:" + String(activityDurations.brushingTeeth);
+  }
+  if (activityDurations.washingHands != 0) {
+    if (activityDurations.random != 0 || activityDurations.clapping != 0 || activityDurations.brushingTeeth != 0) {
+      jsonData += ",";
+    }
+    jsonData += "\"wH\":" + String(activityDurations.washingHands);
+  }
+  if (activityDurations.brushingHair != 0) {
+    if (activityDurations.random != 0 || activityDurations.clapping != 0 || activityDurations.brushingTeeth != 0 || activityDurations.washingHands != 0) {
+      jsonData += ",";
+    }
+    jsonData += "\"bH\":" + String(activityDurations.brushingHair);
+  }
+
+  jsonData += "}";
+
+  // Calculate the remaining size of the JSON string
+  size_t remainingSize = jsonData.length();
+
+  // Start index for slicing the JSON string
+  size_t startIndex = 0;
+
+  // While there is remaining data to send
+  while (remainingSize > 0) {
+    // Calculate the chunk size (up to 20 bytes)
+    size_t chunkSize = min(remainingSize, 20);
+
+    // Extract a chunk of the JSON string
+    String chunkData = jsonData.substring(startIndex, startIndex + chunkSize);
+
+    // Send the chunk as a BLE characteristic value
+    customCharacteristic.writeValue(chunkData.c_str());
+
+    // Update the remaining size and start index
+    remainingSize -= chunkSize;
+    startIndex += chunkSize;
+  }
+
+  Serial.println("Sent");
+  
+  // If data is successfully sent, reset the struct
+  if (jsonData != "{}") {
+    // Only reset if there's valid data in the JSON
+    memset(&activityDurations, 0, sizeof(activityDurations));
+  }
+  lastDataSentTime = millis();
 }
+
 
 // ///////////////////////////////////////////////////////////////////////////
 
