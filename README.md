@@ -21,8 +21,8 @@ Web Application
 * Installation: Navigate to the WebApp/ directory and follow the setup instructions detailed in the WebApp/README.md.
 
 # Usage
-For Patients: Wear the bracelet during daily activities for continuous monitoring.
-For Physicians: Log in to the web app to view and analyze patient data.
+* For Patients: Wear the bracelet during daily activities for continuous monitoring.
+* For Physicians: Log in to the web app to view and analyze patient data.
 
 # Contributing
-We welcome contributions to this project. Please read CONTRIBUTING.md for guidelines on how to make a contribution.
+We welcome contributions to this project. 
