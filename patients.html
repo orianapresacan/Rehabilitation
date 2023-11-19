@@ -41,12 +41,15 @@
                 <li>
                     <a href="#" class="text-white" onclick="togglePanel('panel-registration')">Patient registration</a>
                 </li>
-                <!-- ... other options ... -->
+				<li>
+                    <a href="#" class="text-white" onclick="togglePanel('panel-goals-update')">Patient Goals update</a>
+                </li>
             </ul>
         </nav>
 
         <!-- Main content area -->
         <div id="content">
+            
             <div id="panel-insights">
                 <!-- Patient Dropdown and Date/Week Selector -->
                 <div class="form-row">
@@ -69,6 +72,7 @@
                 <!-- Add an iframe element to display the response content for Summary -->
                 <iframe id="summary-iframe" width="100%" height="400" frameborder="0"></iframe>
             </div>
+
             <div id="panel-registration" style="display: none;">
 				<!-- Registration Form -->
 				<form>
@@ -87,21 +91,24 @@
 					<div class="form-group col-md-4">
 						<label for="device-assigned">Device assigned:</label>
 						<select id="device-assigned" class="form-control">
-							<option value="device1">Device 1</option>
-							<option value="device2">Device 2</option>
-							<!-- Add more options as needed -->
+							<option value="device1">SAFE Device 1</option>
+							<option value="device2">SAFE Device 2</option>
+							<option value="device2">SAFE Device 3</option>
+							<option value="device2">SAFE Device 4</option>
+							<option value="device2">SAFE Device 5</option>
+							<option value="device2">SAFE Device 6</option>
 						</select>
 					</div>
 					<div class="form-group col-md-4">
 						<label for="hospital-unit">Hospital unit:</label>
 						<select id="hospital-unit" class="form-control">
-							<option value="unit1">Unit 1</option>
-							<option value="unit2">Unit 2</option>
+							<option value="unit1">Sunnaas Rehabilitation Hospital</option>
+							<option value="unit2">Lassonløkken Rehabilition Center</option>
 							<!-- Add more options as needed -->
 						</select>
 					</div>
 					<div class="form-group col-md-4">
-						<label for="doctor">GP or Physical therapist:</label>
+						<label for="doctor">Occupational or Physical therapist:</label>
 						<input type="text" id="doctor" class="form-control">
 					</div>
 				</form>
@@ -112,6 +119,83 @@
 					</div>
 				</div>
 			</div>
+			
+			<div id="panel-goals-update" style="display: none;">
+				<div class="form-row">
+                    <div class="form-group col-md-3">
+                        <label for="patient-goals-dropdown">Select a Patient:</label>
+                        <select id="patient-goals-dropdown" class="form-control">
+                            <!-- Patient names will be populated here -->
+                        </select>
+                    </div>
+					<div class="form-group col-md-3">
+						<button id="run-goals-button" class="btn btn-primary btn-block my-3">RUN</button>
+					</div>
+                </div>
+				<form id="goals-form" style="display: none;">
+					<div id="goals-form-container">
+						<!-- Days of the week and corresponding input boxes -->
+						<div class="form-group row">
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Monday:</label>
+									<input type="text" class="form-control goal-input" data-day="Monday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Tuesday:</label>
+									<input type="text" class="form-control goal-input" data-day="Tuesday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Wednesday:</label>
+									<input type="text" class="form-control goal-input" data-day="Wednesday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Thursday:</label>
+									<input type="text" class="form-control goal-input" data-day="Thursday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Friday:</label>
+									<input type="text" class="form-control goal-input" data-day="Friday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Saturday:</label>
+									<input type="text" class="form-control goal-input" data-day="Saturday" value="0.00">
+								</div>
+							</div>
+							<div class="form-group col-md-4 mt-2">
+								<div class="d-flex justify-content-between">
+									<label class="col-md-4 col-form-label">Sunday:</label>
+									<input type="text" class="form-control goal-input" data-day="Sunday" value="0.00">
+								</div>
+							</div>
+						</div>
+
+						<!-- Total weekly hours of activity -->
+						<div class="form-group row">
+							<label class="col-md-4 col-form-label">Total weekly hours of activity:</label>
+							<div class="col-md-4">
+								<input type="text" class="form-control" id="total-hours" readonly>
+							</div>
+						</div>						
+					</div>
+					<div class="form-group row">
+						<div class="col-md-4 offset-md-4">
+							<button id="update-button" class="btn btn-primary btn-block" disabled>Update</button>
+						</div>
+					</div>
+				</form>
+			</div>
+			
         </div>
     </div>
 
@@ -137,7 +221,29 @@
                     console.error('Error fetching patient names:', error);
                 });
         }
-
+		
+		// Function to fetch patient names and populate the dropdown for Goals update
+		function fetchPatientNamesForGoals() {
+			fetch('https://test.innovent.site/innovent/patients', {
+				headers: {
+					'apikey': 'safe',
+				},
+			})
+				.then(response => response.json())
+				.then(data => {
+					const patientDropdown = document.getElementById('patient-goals-dropdown');
+					data.forEach(patient => {
+						const option = document.createElement('option');
+						option.value = patient.username;
+						option.textContent = patient.name;
+						patientDropdown.appendChild(option);
+					});
+				})
+				.catch(error => {
+					console.error('Error fetching patient names:', error);
+				});
+		}
+		
         function handleRunButtonClick() {
             const selectedPatientName = document.getElementById('patient-dropdown').value;
             const selectedWeek = document.getElementById('week-selector').value;
@@ -154,7 +260,7 @@
         }
 
         function togglePanel(panelId) {
-            const panels = ['panel-insights', 'panel-registration'];
+            const panels = ['panel-insights', 'panel-registration', 'panel-goals-update'];
             panels.forEach(panel => {
                 const element = document.getElementById(panel);
                 element.style.display = panel === panelId ? 'block' : 'none';
@@ -173,6 +279,7 @@
         // Initialize patient dropdown and attach button click event
         document.addEventListener('DOMContentLoaded', () => {
             fetchPatientNames();
+			fetchPatientNamesForGoals();
             const runButton = document.getElementById('run-button');
             runButton.addEventListener('click', handleRunButtonClick);
         });
@@ -229,7 +336,150 @@
 			// Display a pop-up alert with the success message
 			alert(message);
 		}
+
+        /////////////////////////////////// Function to handle RUN button click for Patient Goals update
+        function handleGoalsRunButtonClick() {
+			const username = document.getElementById('patient-goals-dropdown').value;
+
+			// Make a POST API call to get goals information
+			fetch('https://test.innovent.site/innovent/get-goals', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'apikey': 'safe',
+				},
+				body: JSON.stringify({ username: username }),
+			})
+			.then(response => response.json())
+			.then(data => {
+				// Populate the form with received data
+				populateGoalsForm(data);
+			})
+			.catch(error => {
+				console.error('Error fetching goals:', error);
+			});
+		}
+
+        function populateGoalsForm(data) {
+			// Get the container for the form elements
+			const formContainer = document.getElementById('goals-form-container');
+			// Clear existing form elements
+			formContainer.innerHTML = '';
+
+			// Iterate through the days of the week in the received data
+			for (const day in data) {
+				if (data.hasOwnProperty(day)) {
+					// Create a form group for each day
+					const formGroup = document.createElement('div');
+					formGroup.classList.add('form-group', 'row');
+
+					// Create a label for the day
+					const label = document.createElement('label');
+					label.classList.add('col-md-4', 'col-form-label');
+					label.textContent = `${day}:`;
+
+					// Create an input box for the day's value
+					const input = document.createElement('input');
+					input.type = 'text';
+					input.classList.add('form-control', 'goal-input');
+					input.dataset.day = day;
+					input.value = data[day];
+
+					// Append label and input to the form group
+					formGroup.appendChild(label);
+					formGroup.appendChild(input);
+
+					// Append the form group to the form container
+					formContainer.appendChild(formGroup);
+				}
+			}
+			
+			// Show the goals form
+			const goalsForm = document.getElementById('goals-form');
+			goalsForm.style.display = 'block';
+	
+			// Calculate and display the total weekly hours
+			calculateAndDisplayTotal();
+			
+			// Enable the Update button when a field is changed
+			enableUpdateButton();
+
+			// Attach input change event listener to update total and enable the Update button
+			const goalInputs = document.querySelectorAll('.goal-input');
+			goalInputs.forEach(input => {
+				input.addEventListener('input', () => {
+					calculateAndDisplayTotal();
+					enableUpdateButton();
+				});
+			});
+
+			// Attach click event listener to the Update button
+			const updateButton = document.getElementById('update-button');
+			updateButton.addEventListener('click', handleUpdateButtonClick);
+		}
 		
+		function calculateAndDisplayTotal() {
+			const goalInputs = document.querySelectorAll('.goal-input');
+			let total = 0;
+
+			goalInputs.forEach(input => {
+				total += parseFloat(input.value) || 0;
+			});
+
+			const totalHoursInput = document.getElementById('total-hours');
+			totalHoursInput.value = total.toFixed(2);
+		}
+		
+		function enableUpdateButton() {
+			const updateButton = document.getElementById('update-button');
+			const goalInputs = document.querySelectorAll('.goal-input');
+
+			let isChanged = false;
+
+			goalInputs.forEach(input => {
+				if (parseFloat(input.value) !== parseFloat(input.dataset.originalValue)) {
+					isChanged = true;
+				}
+			});
+
+			updateButton.disabled = !isChanged;
+		}
+		
+		function handleUpdateButtonClick() {
+			const selectedPatientName = document.getElementById('patient-goals-dropdown').value;
+			const updateData = {};
+
+			// Get updated values from the form
+			const goalInputs = document.querySelectorAll('.goal-input');
+			goalInputs.forEach(input => {
+				updateData[input.dataset.day] = parseFloat(input.value);
+			});
+
+			// Make a POST API call to update goals information
+			fetch('https://test.innovent.site/innovent/update-goals', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'apikey': 'safe',
+				},
+				body: JSON.stringify({ username: selectedPatientName, update: updateData }),
+			})
+			.then(response => response.json())
+			.then(() => {
+				// Handle successful update
+				showSuccessMessage('Goals updated successfully.');
+
+				// Clear the form and go back to the previous view
+				clearForm();
+				togglePanel('panel-goals-update');
+			})
+			.catch(error => {
+				console.error('Error updating goals:', error);
+			});
+		}
+		
+        // Attach event listener for RUN button in Patient Goals update
+		document.getElementById('run-goals-button').addEventListener('click', handleGoalsRunButtonClick);
     </script>
 </body>
 </html>
