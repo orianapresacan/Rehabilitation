@@ -36,7 +36,7 @@ BLECharacteristic customCharacteristic("00002101-0000-1000-8000-00805f9b34fb", B
 #define OUTPUTS_NUM_FOR_AVERAGING ((AVG_TIME_MS / HOP_MS) + (AVG_TIME_MS % HOP_MS ? 1 : 0))
 
 //         BRUSH   HAND_UP   WASH_HANDS   STILL   RANDOM
-#define THRESHOLDS 0.85, 0.91, 0.85, 0.9, 0.55
+#define THRESHOLDS 0.85, 0.91, 0.85, 0.7, 0.55
 
 // ///////////////////////////////////////////////////////////////////////////
 // Function prototypes
