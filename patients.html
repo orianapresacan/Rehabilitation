@@ -11,6 +11,13 @@
 
     <!-- Custom CSS -->
     <link rel="stylesheet" href="static/styles.css">
+	
+	<style>
+		#goals-form {
+			max-width: 600px; /* Adjust the max-width as needed */
+			margin: auto; /* Center the form */
+		}
+	</style>
 </head>
 <body class="bg-white">
     <!-- Header -->
@@ -91,19 +98,19 @@
 					<div class="form-group col-md-4">
 						<label for="device-assigned">Device assigned:</label>
 						<select id="device-assigned" class="form-control">
-							<option value="device1">SAFE Device 1</option>
-							<option value="device2">SAFE Device 2</option>
-							<option value="device2">SAFE Device 3</option>
-							<option value="device2">SAFE Device 4</option>
-							<option value="device2">SAFE Device 5</option>
-							<option value="device2">SAFE Device 6</option>
+							<option value="SAFE Device 1">SAFE Device 1</option>
+							<option value="SAFE Device 2">SAFE Device 2</option>
+							<option value="SAFE Device 3">SAFE Device 3</option>
+							<option value="SAFE Device 4">SAFE Device 4</option>
+							<option value="SAFE Device 5">SAFE Device 5</option>
+							<option value="SAFE Device 6">SAFE Device 6</option>
 						</select>
 					</div>
 					<div class="form-group col-md-4">
 						<label for="hospital-unit">Hospital unit:</label>
 						<select id="hospital-unit" class="form-control">
-							<option value="unit1">Sunnaas Rehabilitation Hospital</option>
-							<option value="unit2">Lassonløkken Rehabilition Center</option>
+							<option value="Sunnaas Rehabilitation Hospital">Sunnaas Rehabilitation Hospital</option>
+							<option value="Lassonløkken Rehabilition Center">Lassonløkken Rehabilition Center</option>
 							<!-- Add more options as needed -->
 						</select>
 					</div>
@@ -121,80 +128,41 @@
 			</div>
 			
 			<div id="panel-goals-update" style="display: none;">
-				<div class="form-row">
+                <div class="form-row">
                     <div class="form-group col-md-3">
                         <label for="patient-goals-dropdown">Select a Patient:</label>
                         <select id="patient-goals-dropdown" class="form-control">
                             <!-- Patient names will be populated here -->
                         </select>
                     </div>
-					<div class="form-group col-md-3">
-						<button id="run-goals-button" class="btn btn-primary btn-block my-3">RUN</button>
-					</div>
+                    <div class="form-group col-md-3">
+                        <button id="run-goals-button" class="btn btn-primary btn-block my-3">RUN</button>
+                    </div>
                 </div>
-				<form id="goals-form" style="display: none;">
-					<div id="goals-form-container">
-						<!-- Days of the week and corresponding input boxes -->
-						<div class="form-group row">
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Monday:</label>
-									<input type="text" class="form-control goal-input" data-day="Monday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Tuesday:</label>
-									<input type="text" class="form-control goal-input" data-day="Tuesday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Wednesday:</label>
-									<input type="text" class="form-control goal-input" data-day="Wednesday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Thursday:</label>
-									<input type="text" class="form-control goal-input" data-day="Thursday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Friday:</label>
-									<input type="text" class="form-control goal-input" data-day="Friday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Saturday:</label>
-									<input type="text" class="form-control goal-input" data-day="Saturday" value="0.00">
-								</div>
-							</div>
-							<div class="form-group col-md-4 mt-2">
-								<div class="d-flex justify-content-between">
-									<label class="col-md-4 col-form-label">Sunday:</label>
-									<input type="text" class="form-control goal-input" data-day="Sunday" value="0.00">
-								</div>
-							</div>
+                <form id="goals-form" style="display: none;">
+                    <div id="goals-form-container">
+                        <!-- Using a table structure for the form -->
+                    </div>
+					
+                    <div class="form-group row">
+						<!-- Hiding the total hours initially -->
+						<div class="col-md-5">
+							<label id="total-hours-label" class="col-form-label font-weight-bold">Total weekly hours of activity:</label>
 						</div>
-
-						<!-- Total weekly hours of activity -->
-						<div class="form-group row">
-							<label class="col-md-4 col-form-label">Total weekly hours of activity:</label>
-							<div class="col-md-4">
-								<input type="text" class="form-control" id="total-hours" readonly>
-							</div>
-						</div>						
-					</div>
-					<div class="form-group row">
-						<div class="col-md-4 offset-md-4">
+						<div class="col-md-3">
+							<input type="text" class="form-control font-weight-bold fs-5" id="total-hours" readonly style="display: none;">
+						</div>
+						<div class="col-md-4">
 							<button id="update-button" class="btn btn-primary btn-block" disabled>Update</button>
 						</div>
 					</div>
-				</form>
-			</div>
+                    <!-- <div class="form-group row"> 
+                        <div class="col-md-4 offset-md-4">
+                            <button id="update-button" class="btn btn-primary btn-block" disabled>Update</button>
+                        </div>
+                    </div> -->
+                </form>
+            </div>
 			
         </div>
     </div>
@@ -245,8 +213,15 @@
 		}
 		
         function handleRunButtonClick() {
+			
             const selectedPatientName = document.getElementById('patient-dropdown').value;
             const selectedWeek = document.getElementById('week-selector').value;
+			if (!selectedPatientName || !selectedWeek) {
+				alert('Please select both a patient and a week before running.');
+				// Exit the function, don't proceed with the API call
+				return;
+			}
+			
             const getActivitiesURL = `https://test.innovent.site/innovent/getactivities?username=${selectedPatientName}&week=${selectedWeek}`;
             const getSummaryURL = `https://cdn.kicksdigital.com/depictdatastudio.com/2023/02/GGE_Sample-Graphs.jpg`;
 
@@ -354,6 +329,8 @@
 			.then(data => {
 				// Populate the form with received data
 				populateGoalsForm(data);
+				const runButtonGoals = document.getElementById('run-goals-button')
+				runButtonGoals.disabled = true;
 			})
 			.catch(error => {
 				console.error('Error fetching goals:', error);
@@ -361,49 +338,56 @@
 		}
 
         function populateGoalsForm(data) {
-			// Get the container for the form elements
-			const formContainer = document.getElementById('goals-form-container');
-			// Clear existing form elements
-			formContainer.innerHTML = '';
+            // Get the container for the form elements
+            const formContainer = document.getElementById('goals-form-container');
+            // Clear existing form elements
+            formContainer.innerHTML = '';
 
-			// Iterate through the days of the week in the received data
-			for (const day in data) {
-				if (data.hasOwnProperty(day)) {
-					// Create a form group for each day
-					const formGroup = document.createElement('div');
-					formGroup.classList.add('form-group', 'row');
+            // Create a table
+            const table = document.createElement('table');
+            table.classList.add('table');
 
-					// Create a label for the day
-					const label = document.createElement('label');
-					label.classList.add('col-md-4', 'col-form-label');
-					label.textContent = `${day}:`;
+            // Iterate through the days of the week in the received data
+            for (const day in data) {
+                if (data.hasOwnProperty(day)) {
+                    // Create a table row for each day
+                    const row = table.insertRow();
 
-					// Create an input box for the day's value
-					const input = document.createElement('input');
-					input.type = 'text';
-					input.classList.add('form-control', 'goal-input');
-					input.dataset.day = day;
-					input.value = data[day];
+                    // Create a table cell for the day
+                    const cellDay = row.insertCell(0);
+                    cellDay.textContent = day;
 
-					// Append label and input to the form group
-					formGroup.appendChild(label);
-					formGroup.appendChild(input);
+                    // Create a table cell for the input
+                    const cellInput = row.insertCell(1);
+                    const input = document.createElement('input');
+                    input.type = 'text';
+                    input.classList.add('form-control', 'goal-input');
+                    input.dataset.day = day;
+                    input.value = data[day];
 
-					// Append the form group to the form container
-					formContainer.appendChild(formGroup);
-				}
-			}
+                    // Store the original value in the dataset
+                    input.dataset.originalValue = data[day];
+
+                    // Append the input to the cell
+                    cellInput.appendChild(input);
+                }
+            }
+
+            // Append the table to the form container
+            formContainer.appendChild(table);
 			
 			// Show the goals form
 			const goalsForm = document.getElementById('goals-form');
 			goalsForm.style.display = 'block';
 	
 			// Calculate and display the total weekly hours
+			const totalHoursLabel = document.getElementById('total-hours-label');
+			totalHoursLabel.style.display = 'block';
 			calculateAndDisplayTotal();
 			
 			// Enable the Update button when a field is changed
 			enableUpdateButton();
-
+			
 			// Attach input change event listener to update total and enable the Update button
 			const goalInputs = document.querySelectorAll('.goal-input');
 			goalInputs.forEach(input => {
@@ -415,6 +399,7 @@
 
 			// Attach click event listener to the Update button
 			const updateButton = document.getElementById('update-button');
+			updateButton.style.display = 'block';
 			updateButton.addEventListener('click', handleUpdateButtonClick);
 		}
 		
@@ -431,19 +416,23 @@
 		}
 		
 		function enableUpdateButton() {
-			const updateButton = document.getElementById('update-button');
-			const goalInputs = document.querySelectorAll('.goal-input');
+            const updateButton = document.getElementById('update-button');
+            const goalInputs = document.querySelectorAll('.goal-input');
 
-			let isChanged = false;
+            let isChanged = false;
 
-			goalInputs.forEach(input => {
-				if (parseFloat(input.value) !== parseFloat(input.dataset.originalValue)) {
-					isChanged = true;
-				}
-			});
+            goalInputs.forEach(input => {
+                if (parseFloat(input.value) !== parseFloat(input.dataset.originalValue)) {
+                    isChanged = true;
+                }
+            });
 
-			updateButton.disabled = !isChanged;
-		}
+            // Show/hide total hours based on changes
+            const totalHoursInput = document.getElementById('total-hours');
+            totalHoursInput.style.display = 'block';
+
+            updateButton.disabled = !isChanged;
+        }
 		
 		function handleUpdateButtonClick() {
 			const selectedPatientName = document.getElementById('patient-goals-dropdown').value;
@@ -469,14 +458,37 @@
 				// Handle successful update
 				showSuccessMessage('Goals updated successfully.');
 
-				// Clear the form and go back to the previous view
-				clearForm();
+				// Clear the form
+				clearGoalsForm();
+
+				// Go back to the initial view
 				togglePanel('panel-goals-update');
 			})
 			.catch(error => {
 				console.error('Error updating goals:', error);
 			});
 		}
+		
+		function clearGoalsForm() {
+			// Clear the form elements
+			const formContainer = document.getElementById('goals-form-container');
+			formContainer.innerHTML = '';
+
+			// Hide the total hours input and label
+			const totalHoursInput = document.getElementById('total-hours');
+			totalHoursInput.style.display = 'none';
+			const totalHoursLabel = document.getElementById('total-hours-label');
+			totalHoursLabel.style.display = 'none';
+			
+			// Hide the update button
+			const updateButton = document.getElementById('update-button');
+			updateButton.style.display = 'none';
+			
+			// Enable run button
+			const runButtonGoals = document.getElementById('run-goals-button');
+			runButtonGoals.disabled = false;
+		}
+		
 		
         // Attach event listener for RUN button in Patient Goals update
 		document.getElementById('run-goals-button').addEventListener('click', handleGoalsRunButtonClick);
