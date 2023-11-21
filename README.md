@@ -6,6 +6,7 @@ This repository contains the code and resources for a stroke rehabilitation moni
 * Arduino/: Arduino sketch for the Nicla Sense ME board and the library of our trained model.
 * WebApp/: Source code for the web application used by healthcare professionals.
 * MobileApplication/: Source code for the mobile application used by patients.
+* Node-red/: Source code for the node-red flow designed as a middleware for the web-page and mobile device.
 
 # Features
 * Real-Time Data Transmission: Using BLE, the bracelet transmits hand activity data to a mobile app, which then uploads it to a cloud service.

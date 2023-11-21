@@ -1,0 +1,1939 @@
+[
+    {
+        "id": "ead6865699301f71",
+        "type": "tab",
+        "label": "Devices",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "1a12b37e76b5bb7b",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/safein",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 140,
+        "wires": [
+            [
+                "2f45a4b23b4fe0fd",
+                "00e60a6b3283af33"
+            ]
+        ]
+    },
+    {
+        "id": "154eee681f7ebfd3",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 590,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "2f45a4b23b4fe0fd",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        var safe = msg.payload.activities;\n        safe = safe.replace(/^\\s+|\\s+$/gm,'');\n        msg.safe = JSON.parse(safe);\n        validate = true;\n    }\n}\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n  msg.statusCode = 200;\n  msg.payload = { response: \"success\" };\n  node.warn(msg.safe);\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 260,
+        "y": 140,
+        "wires": [
+            [
+                "fafd2309326167b2"
+            ]
+        ]
+    },
+    {
+        "id": "fafd2309326167b2",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 410,
+        "y": 140,
+        "wires": [
+            [
+                "154eee681f7ebfd3"
+            ],
+            [
+                "154eee681f7ebfd3",
+                "fcbbab4a4da09f83"
+            ]
+        ]
+    },
+    {
+        "id": "42f3ea1118768bf6",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "save results",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar timestamp = Date.now();\nvar activities = msg.safe;\nvar patient = msg.payload[0];\nvar toTopic = \"\", activity = \"\";\n\nif(activities.rd){\n    activity = \"Random\"\n    node.warn(activity)\n    toTopic += \"INSERT INTO activities (timestamp, activity, device, username, fullname, hospital, activityTime, doctor) \" +\n            \"VALUES (\" + timestamp + \",'\" + activity + \"','\" + patient.assignedDevice + \"','\" +\n            patient.username + \"','\" + patient.fullname + \"','\" + patient.hospital + \"',\" + msg.safe.rd + \",'\" + patient.doctor + \"');\" + \n            \"\\n\";\n}\nif(activities.hU){\n    activity = \"Hand Up\"\n    node.warn(activity)\n    toTopic += \"INSERT INTO activities (timestamp, activity, device, username, fullname, hospital, activityTime, doctor) \" +\n            \"VALUES (\" + timestamp + \",'\" + activity + \"','\" + patient.assignedDevice + \"','\" +\n            patient.username + \"','\" + patient.fullname + \"','\" + patient.hospital + \"',\" + msg.safe.hU + \",'\" + patient.doctor + \"');\" + \n            \"\\n\";\n}\nif(activities.bT){\n    activity = \"Brushing Teeth\"\n    node.warn(activity)\n    toTopic += \"INSERT INTO activities (timestamp, activity, device, username, fullname, hospital, activityTime, doctor) \" +\n            \"VALUES (\" + timestamp + \",'\" + activity + \"','\" + patient.assignedDevice + \"','\" +\n            patient.username + \"','\" + patient.fullname + \"','\" + patient.hospital + \"',\" + msg.safe.bT + \",'\" + patient.doctor + \"');\" + \n            \"\\n\";\n}\nif(activities.wH){\n    activity = \"Washing Hands\"\n    node.warn(activity)\n    toTopic += \"INSERT INTO activities (timestamp, activity, device, username, fullname, hospital, activityTime, doctor) \" +\n            \"VALUES (\" + timestamp + \",'\" + activity + \"','\" + patient.assignedDevice + \"','\" +\n            patient.username + \"','\" + patient.fullname + \"','\" + patient.hospital + \"',\" + msg.safe.wH + \",'\" + patient.doctor + \"');\" + \n            \"\\n\";\n}\nif(activities.st){\n    activity = \"Still\"\n    node.warn(activity)\n    toTopic += \"INSERT INTO activities (timestamp, activity, device, username, fullname, hospital, activityTime, doctor) \" +\n            \"VALUES (\" + timestamp + \",'\" + activity + \"','\" + patient.assignedDevice + \"','\" +\n            patient.username + \"','\" + patient.fullname + \"','\" + patient.hospital + \"',\" + msg.safe.st + \",'\" + patient.doctor + \"');\" + \n            \"\\n\";\n}\n\nmsg.topic = \"BEGIN TRANSACTION;\" + \"\\n\" + toTopic + \"COMMIT;\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 970,
+        "y": 180,
+        "wires": [
+            [
+                "a2f0acf9516c2d6c",
+                "911dcb62fd418e7e"
+            ]
+        ]
+    },
+    {
+        "id": "a2f0acf9516c2d6c",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1130,
+        "y": 240,
+        "wires": []
+    },
+    {
+        "id": "911dcb62fd418e7e",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "batch",
+        "sql": "",
+        "name": "safe",
+        "x": 1130,
+        "y": 180,
+        "wires": [
+            [
+                "c6b6525dcfe0965a"
+            ]
+        ]
+    },
+    {
+        "id": "c6b6525dcfe0965a",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1270,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "8c6a70e82ffdcc61",
+        "type": "inject",
+        "z": "ead6865699301f71",
+        "name": "query act",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM activities;",
+        "x": 240,
+        "y": 360,
+        "wires": [
+            [
+                "2728586f397ca90f"
+            ]
+        ]
+    },
+    {
+        "id": "2728586f397ca90f",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "safe",
+        "x": 430,
+        "y": 360,
+        "wires": [
+            [
+                "7f0ae8ba0b059127"
+            ]
+        ]
+    },
+    {
+        "id": "7f0ae8ba0b059127",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 590,
+        "y": 360,
+        "wires": []
+    },
+    {
+        "id": "d56e40e78d69297a",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/target",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 110,
+        "y": 560,
+        "wires": [
+            [
+                "08690b098884f449",
+                "a844e6540c6b40a7"
+            ]
+        ]
+    },
+    {
+        "id": "08690b098884f449",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\n\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        validate = true;\n    }\n}\n\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n    var assignedDevice = \"SAFE Device 1\";\n    var timestamp = new Date();\n    var days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\n    var dayOfWeek = days[timestamp.getDay()]\n    //node.warn(dayOfWeek)\n    msg.topic = \"SELECT goalHours FROM total WHERE assignedDevice='\" +assignedDevice+ \"' AND goalDay='\"+dayOfWeek+\"';\";\n    msg.statusCode = 200;\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 280,
+        "y": 560,
+        "wires": [
+            [
+                "ab3cce668ef94545"
+            ]
+        ]
+    },
+    {
+        "id": "c5651f5ceda1d16b",
+        "type": "inject",
+        "z": "ead6865699301f71",
+        "name": "query total",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "SELECT * FROM total;",
+        "x": 240,
+        "y": 420,
+        "wires": [
+            [
+                "2728586f397ca90f"
+            ]
+        ]
+    },
+    {
+        "id": "848b75913e257f8a",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "total",
+        "x": 550,
+        "y": 580,
+        "wires": [
+            [
+                "a9e03abc27ce7f7e"
+            ]
+        ]
+    },
+    {
+        "id": "a9e03abc27ce7f7e",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar response = msg.payload;\nvar count = response[0].goalHours.toString()\nmsg.payload = {target:count}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 700,
+        "y": 580,
+        "wires": [
+            [
+                "4d81bfe7e2d65b6a",
+                "65401623.9abfe8"
+            ]
+        ]
+    },
+    {
+        "id": "ab3cce668ef94545",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 410,
+        "y": 560,
+        "wires": [
+            [
+                "0c79cabcfa64d674"
+            ],
+            [
+                "848b75913e257f8a"
+            ]
+        ]
+    },
+    {
+        "id": "0c79cabcfa64d674",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 550,
+        "y": 520,
+        "wires": []
+    },
+    {
+        "id": "60f0b197042081a2",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1030,
+        "y": 580,
+        "wires": []
+    },
+    {
+        "id": "4d81bfe7e2d65b6a",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 850,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "00e60a6b3283af33",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 250,
+        "y": 180,
+        "wires": []
+    },
+    {
+        "id": "d50791a2291ba90c",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 620,
+        "wires": []
+    },
+    {
+        "id": "92f3d52d3d26e438",
+        "type": "inject",
+        "z": "ead6865699301f71",
+        "name": "update total",
+        "props": [
+            {
+                "p": "topic",
+                "vt": "str"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "UPDATE total SET count = '2';",
+        "x": 230,
+        "y": 300,
+        "wires": [
+            [
+                "2728586f397ca90f"
+            ]
+        ]
+    },
+    {
+        "id": "a844e6540c6b40a7",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 270,
+        "y": 600,
+        "wires": []
+    },
+    {
+        "id": "65401623.9abfe8",
+        "type": "change",
+        "z": "ead6865699301f71",
+        "name": "Set Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 870,
+        "y": 580,
+        "wires": [
+            [
+                "60f0b197042081a2",
+                "d50791a2291ba90c"
+            ]
+        ]
+    },
+    {
+        "id": "1e0841f1.ac68fe",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/motion",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 900,
+        "wires": [
+            [
+                "305d0a3d2cfa9a1d"
+            ]
+        ]
+    },
+    {
+        "id": "4c783328.03dc2c",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "msg.url = \"mysitepost\";",
+        "func": "msg.url = \"mysitepost\";\nmsg.payload.max = msg.max;\nmsg.payload.progress = msg.progress;\nmsg.payload.goal = msg.payload.max - msg.payload.progress;\n\nmsg.payload.progressLiteral = convertDecimalToTime(msg.payload.progress).toString();\nmsg.payload.goalLiteral = convertDecimalToTime(msg.payload.goal).toString();\n\nfunction convertDecimalToTime(decimalHours) {\n    const hours = Math.floor(decimalHours);\n    const decimalMinutes = (decimalHours - hours) * 60;\n    const minutes = Math.round(decimalMinutes);\n\n    let timeString = `${hours} hour`;\n    if (hours !== 1) {\n        timeString += 's'; // Add 's' for plural\n    }\n    if (minutes > 0) {\n        timeString += ` ${minutes} minute${minutes !== 1 ? 's' : ''}`;\n    }\n    return timeString;\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1160,
+        "y": 900,
+        "wires": [
+            [
+                "99c905c7654837a5"
+            ]
+        ]
+    },
+    {
+        "id": "86c08a83.385758",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Google Dashboard - Mobile app",
+        "info": "",
+        "x": 210,
+        "y": 820,
+        "wires": []
+    },
+    {
+        "id": "99c905c7654837a5",
+        "type": "template",
+        "z": "ead6865699301f71",
+        "name": "HTML ",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<html>\n  <head>\n    <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n    <style>\n      body {\n        background-color: black; /* Set the page background color to black */\n        color: white; /* Set text color to white */\n        margin: 0; /* Remove default margin */\n        padding: 0; /* Remove default padding */\n      }\n      #chart-container {\n        margin-left: 0; /* Remove the left margin */\n      }\n    </style>\n    <script type=\"text/javascript\">\n      google.charts.load(\"current\", {packages:[\"corechart\"]});\n      google.charts.setOnLoadCallback(drawChart);\n      function drawChart() {\n        \n        var progressLiteral = 'My Progress today: \\n{{{payload.progressLiteral}}}';\n        var goalLiteral = 'Time to reach my goal: \\n{{{payload.goalLiteral}}}';\n\n        var data = google.visualization.arrayToDataTable([\n          ['Activities', 'Hours per Day', {type: 'string', role: 'tooltip'}],\n          ['My Progress today', {{{payload.progress}}}, progressLiteral],\n          ['Hours to reach my goal', {{{payload.goal}}}, goalLiteral]\n        ]);\n\n        var options = {\n          is3D: true,\n          backgroundColor: \"black\",\n          legend: \"none\",\n          chartArea: { left: \"5%\", top: \"2%\", width: \"95%\", height: \"95%\" },\n          slices: {\n            0: { color: \"#79AC78\", offset: 0.1 },\n            1: { color: \"#D1E8E4\" },\n          },\n          fontSize: 30,\n          dataLabels: \"value\",\n        };\n\n        var chart = new google.visualization.PieChart(\n          document.getElementById(\"piechart_3d\")\n        );\n        chart.draw(data, options);\n      }\n    </script>\n  </head>\n  <body>\n    <div id=\"piechart_3d\" style=\"width: 350px; height: 350px;\"></div>\n  </body>\n</html>\n",
+        "x": 1360,
+        "y": 900,
+        "wires": [
+            [
+                "86f0e47f23b4bbe5"
+            ]
+        ]
+    },
+    {
+        "id": "86f0e47f23b4bbe5",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "x": 1500,
+        "y": 900,
+        "wires": []
+    },
+    {
+        "id": "f8a825b0dea60365",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/getactivities",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 1060,
+        "wires": [
+            [
+                "2f7342f7b597a7d8",
+                "737967cab7d66347"
+            ]
+        ]
+    },
+    {
+        "id": "1be3c69904e357db",
+        "type": "template",
+        "z": "ead6865699301f71",
+        "name": "HTML ",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<html>\n<head>\n  <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n  <script type=\"text/javascript\">\n    google.charts.load('current', {'packages':['bar']});\n    google.charts.setOnLoadCallback(drawStuff);\n\n    function drawStuff() {\n      var data = google.visualization.arrayToDataTable([\n        [\"Activity\", \"Progress percentage\"],\n        [\"Random\", {{{payload.random}}}],\n        [\"Hand Up\", {{{payload.handup}}}],\n        [\"Brushing Teeth\", {{{payload.brushingteeth}}}],\n        [\"Washing Hands\", {{{payload.washinghands}}}]\n      ]);\n\n      const legendText = '{{{payload.legend}}}';\n      const subtitleText = '{{{payload.subtitle}}}';\n      var options = {\n        title: legendText,\n        subtitle: subtitleText,\n        width: 700,\n        height: 350,\n        theme: 'maximized', \n        legend: { position: 'none' },\n        bars: 'vertical',\n        axes: {\n          x: {\n            0: { side: 'top', label: 'Activity' }\n          },\n          y: {\n            0: { side: 'left', label: 'Progress percentage' }\n          }\n        },\n        bar: { groupWidth: \"90%\" },\n        colors: [\"#b2d8b0\", \"#efeccb\", \"#fdd1a1\", \"#aed9e0\"]\n      };\n\n      var chart = new google.charts.Bar(document.getElementById('top_x_div'));\n      chart.draw(data, google.charts.Bar.convertOptions(options));\n    }\n  </script>\n</head>\n<body>\n  <div id=\"top_x_div\" style=\"width: 700px; height: 350px;\"></div>\n</body>\n</html>\n",
+        "x": 1070,
+        "y": 1060,
+        "wires": [
+            [
+                "1fdf8cf622b57c55",
+                "4df528611770897d"
+            ]
+        ]
+    },
+    {
+        "id": "1fdf8cf622b57c55",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "x": 1210,
+        "y": 1060,
+        "wires": []
+    },
+    {
+        "id": "d761f51543713aed",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/patients",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 150,
+        "y": 1520,
+        "wires": [
+            [
+                "b25113ea1546b680"
+            ]
+        ]
+    },
+    {
+        "id": "43944137276ffdce",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 570,
+        "y": 1480,
+        "wires": []
+    },
+    {
+        "id": "b25113ea1546b680",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\n\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        validate = true;\n    }\n}\n\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n    msg.topic = \"SELECT fullname as name,username FROM patients;\"\n    msg.statusCode = 200;\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 300,
+        "y": 1520,
+        "wires": [
+            [
+                "c5d66b7e4ae6a246"
+            ]
+        ]
+    },
+    {
+        "id": "c5d66b7e4ae6a246",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 430,
+        "y": 1520,
+        "wires": [
+            [
+                "43944137276ffdce"
+            ],
+            [
+                "f125776475585314"
+            ]
+        ]
+    },
+    {
+        "id": "40362804dc527a99",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 1600,
+        "wires": []
+    },
+    {
+        "id": "f125776475585314",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "patients",
+        "x": 580,
+        "y": 1560,
+        "wires": [
+            [
+                "2637b5b77264d8ff"
+            ]
+        ]
+    },
+    {
+        "id": "2637b5b77264d8ff",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar response = msg.payload;\n//node.warn(response)\n\nmsg.payload = response;\nmsg.headers = {\"content-type\": \"application/json\"}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 720,
+        "y": 1560,
+        "wires": [
+            [
+                "6d04be45a36bc952",
+                "40362804dc527a99"
+            ]
+        ]
+    },
+    {
+        "id": "6d04be45a36bc952",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 870,
+        "y": 1560,
+        "wires": []
+    },
+    {
+        "id": "2f7342f7b597a7d8",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 330,
+        "y": 1100,
+        "wires": []
+    },
+    {
+        "id": "dcba2319a2909e91",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Google Dashboard - Get activities website",
+        "info": "",
+        "x": 240,
+        "y": 1000,
+        "wires": []
+    },
+    {
+        "id": "90dd7a43dea4cac6",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/getlastweek",
+        "method": "get",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 1240,
+        "wires": [
+            [
+                "b4da5f964a13786f",
+                "5f2e8e08e3ffdedb"
+            ]
+        ]
+    },
+    {
+        "id": "045272d52abb82aa",
+        "type": "template",
+        "z": "ead6865699301f71",
+        "name": "HTML ",
+        "field": "payload",
+        "fieldType": "msg",
+        "format": "handlebars",
+        "syntax": "mustache",
+        "template": "<html>\n<head>\n  <script type=\"text/javascript\" src=\"https://www.gstatic.com/charts/loader.js\"></script>\n  <script type=\"text/javascript\">\n    google.charts.load('current', {'packages':['bar']});\n    google.charts.setOnLoadCallback(drawChart);\n\n    function drawChart() {\n      var chartData = [['Day', 'Random', 'Hand Up', 'Brushing Teeth', 'Washing Hands', 'Still']];\n      var patientData = JSON.parse('{{{payload.data}}}'); // Assuming payload.data is a JSON string\n      patientData.forEach(function(item) {\n        chartData.push([\n          item.day,\n          item.random,\n          item.handup,\n          item.brushingteeth,\n          item.washinghands,\n          item.still\n        ]);\n      });\n\n      var data = google.visualization.arrayToDataTable(chartData);\n      const legendText = '{{{payload.legend}}}';\n\n      var options = {\n        chart: {\n            title: legendText,\n            theme: 'maximized',\n            legend: { position: 'top', maxLines: 3 }\n        },\n        bars: 'horizontal',\n        //bar: { groupWidth: \"90%\" },\n        colors: ['#b2d8b0', '#efeccb', '#fdd1a1', '#aed9e0', '#d6d6d6'], // Set colors for each bar\n        axes: {\n          x: {\n            0: { side: 'top', label: 'Duration (minutes)' } // Set x-axis label\n          },\n          y: {\n            0: { side: 'top', label: 'Day' } // Set y-axis label\n          }\n        }\n      };\n\n      var chart = new google.charts.Bar(document.getElementById('barchart_material'));\n      chart.draw(data, google.charts.Bar.convertOptions(options));\n    }\n  </script>\n</head>\n<body>\n  <div id=\"barchart_material\" style=\"width: 700px; height: 500px;\"></div>\n</body>\n</html>\n",
+        "x": 1110,
+        "y": 1240,
+        "wires": [
+            [
+                "25079f415e589f8b",
+                "b1f135e4092e1d7b"
+            ]
+        ]
+    },
+    {
+        "id": "b4da5f964a13786f",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 350,
+        "y": 1300,
+        "wires": []
+    },
+    {
+        "id": "86663e20552b1959",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Google Dashboard - Get last week's activity website",
+        "info": "",
+        "x": 270,
+        "y": 1180,
+        "wires": []
+    },
+    {
+        "id": "36ba840dc110fb5c",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Website list - Get patient names",
+        "info": "",
+        "x": 210,
+        "y": 1460,
+        "wires": []
+    },
+    {
+        "id": "436efa34f1fb6f9b",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/registerpatient",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 180,
+        "y": 1780,
+        "wires": [
+            [
+                "0c8252076ab7b338"
+            ]
+        ]
+    },
+    {
+        "id": "0c8252076ab7b338",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        msg.patient = msg.payload;\n        validate = true;\n    }\n}\n\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n  msg.statusCode = 200;\n  msg.payload = { response: \"success\" };\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 1780,
+        "wires": [
+            [
+                "611e01cbb9e22442"
+            ]
+        ]
+    },
+    {
+        "id": "611e01cbb9e22442",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 1780,
+        "wires": [
+            [
+                "92c4f44d617a1f97"
+            ],
+            [
+                "92c4f44d617a1f97",
+                "2ee143da89f0dd85"
+            ]
+        ]
+    },
+    {
+        "id": "2ee143da89f0dd85",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "save",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar timestamp = Date.now();\n\nmsg.topic = \"INSERT OR REPLACE INTO patients (timestamp, fullname, username, assignedDevice, hospital, doctor) \" +\n            \"VALUES ('\" + timestamp + \"','\" + msg.patient.fullname + \"','\" + msg.patient.username +\n            \"','\" + msg.patient.device + \"','\" + msg.patient.hospital + \"','\" + msg.patient.doctor + \"');\"\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 690,
+        "y": 1820,
+        "wires": [
+            [
+                "5622a3b7a8b347dc"
+            ]
+        ]
+    },
+    {
+        "id": "5622a3b7a8b347dc",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "patients",
+        "x": 860,
+        "y": 1820,
+        "wires": [
+            [
+                "6eb713ddf8258829"
+            ]
+        ]
+    },
+    {
+        "id": "6eb713ddf8258829",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1010,
+        "y": 1820,
+        "wires": []
+    },
+    {
+        "id": "92c4f44d617a1f97",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 690,
+        "y": 1740,
+        "wires": []
+    },
+    {
+        "id": "bd8233ba8ebafd8b",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Website - Post new patient details",
+        "info": "",
+        "x": 220,
+        "y": 1720,
+        "wires": []
+    },
+    {
+        "id": "42a25a050faf5d42",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "App Inventor - Post activities from device",
+        "info": "",
+        "x": 200,
+        "y": 60,
+        "wires": []
+    },
+    {
+        "id": "59424910251d86dd",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "App Inventor - Get target total",
+        "info": "",
+        "x": 160,
+        "y": 500,
+        "wires": []
+    },
+    {
+        "id": "1ea1babb47e854d5",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/get-goals",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 160,
+        "y": 2040,
+        "wires": [
+            [
+                "3b7e05f892c01396"
+            ]
+        ]
+    },
+    {
+        "id": "3b7e05f892c01396",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\n\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        validate = true;\n    }\n}\n\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n    var body = msg.req.body;\n    var username = body.username;\n    msg.topic = \"SELECT goalDay,goalHours FROM total WHERE username = '\" + username +\"';\";\n    msg.statusCode = 200;\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 2040,
+        "wires": [
+            [
+                "caac2cab43e36c2b"
+            ]
+        ]
+    },
+    {
+        "id": "534cf1ebb8b1d201",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "total",
+        "x": 630,
+        "y": 2080,
+        "wires": [
+            [
+                "f7e589e28056d777"
+            ]
+        ]
+    },
+    {
+        "id": "f7e589e28056d777",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nif(msg.payload.length > 0){\n    var response = msg.payload;\n    var toPayload = \"{\";\n    for(i=0; i<response.length; i++){\n        toPayload += '\"' + response[i].goalDay + '\":' + response[i].goalHours + ',' \n    }\n    toPayload = toPayload.slice(0,-1);\n    toPayload += \"}\";\n    //node.warn(toPayload)\n    msg.payload = JSON.parse(toPayload);\n}\nelse{\n    msg.payload = {\"Monday\":0,\"Tuesday\":0,\"Wednesday\":0,\"Thursday\":0,\"Friday\":0,\"Saturday\":0,\"Sunday\":0}\n}\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 780,
+        "y": 2080,
+        "wires": [
+            [
+                "36c6f3835186393a"
+            ]
+        ]
+    },
+    {
+        "id": "caac2cab43e36c2b",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 490,
+        "y": 2040,
+        "wires": [
+            [
+                "805b5f9e08ebaf09"
+            ],
+            [
+                "534cf1ebb8b1d201"
+            ]
+        ]
+    },
+    {
+        "id": "805b5f9e08ebaf09",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 630,
+        "y": 2000,
+        "wires": []
+    },
+    {
+        "id": "111536db9c82b939",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 1110,
+        "y": 2040,
+        "wires": []
+    },
+    {
+        "id": "9c47700be21893c9",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1110,
+        "y": 2080,
+        "wires": []
+    },
+    {
+        "id": "36c6f3835186393a",
+        "type": "change",
+        "z": "ead6865699301f71",
+        "name": "Set Headers",
+        "rules": [
+            {
+                "t": "set",
+                "p": "headers",
+                "pt": "msg",
+                "to": "{}",
+                "tot": "json"
+            },
+            {
+                "t": "set",
+                "p": "headers.content-type",
+                "pt": "msg",
+                "to": "application/json",
+                "tot": "str"
+            }
+        ],
+        "action": "",
+        "property": "",
+        "from": "",
+        "to": "",
+        "reg": false,
+        "x": 950,
+        "y": 2080,
+        "wires": [
+            [
+                "111536db9c82b939",
+                "9c47700be21893c9"
+            ]
+        ]
+    },
+    {
+        "id": "7b3c2c32c1104796",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Website - Get user goals",
+        "info": "",
+        "x": 190,
+        "y": 1980,
+        "wires": []
+    },
+    {
+        "id": "8e26fb4736f1fed0",
+        "type": "http in",
+        "z": "ead6865699301f71",
+        "name": "",
+        "url": "/update-goals",
+        "method": "post",
+        "upload": false,
+        "swaggerDoc": "",
+        "x": 190,
+        "y": 2480,
+        "wires": [
+            [
+                "481c7aa0a788020d",
+                "d343e5a756426e17"
+            ]
+        ]
+    },
+    {
+        "id": "481c7aa0a788020d",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar headers = msg.req.headers;\nvar validate;\n\nvar apikey = \"safe\";\n\nif (!headers.apikey){\n    validate = false;\n}else{\n    if(headers.apikey != apikey){\n        validate = false;\n    }\n    else{\n        validate = true;\n    }\n}\n\n\n//checking if the api_key is correct, otherwise response is Unauthorized\nif (validate != true) {\n  node.warn(\"Unauthorized\");\n  msg.payload = { response: \"unauthorized\" };\n  msg.statusCode = 401;\n} else {\n    var body = msg.req.body;\n    msg.payloadOriginal = body;\n    msg.payload = { response: \"successful\" };\n    msg.topic = \"SELECT * FROM patients WHERE username = '\" + body.username +\"';\";\n    msg.statusCode = 200;\n}\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 2480,
+        "wires": [
+            [
+                "4c155b88804be76e"
+            ]
+        ]
+    },
+    {
+        "id": "eaf343d33f65a433",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "patients",
+        "x": 660,
+        "y": 2580,
+        "wires": [
+            [
+                "d8b949e70fa9356c",
+                "e3b1994b6f6ae997"
+            ]
+        ]
+    },
+    {
+        "id": "4c155b88804be76e",
+        "type": "switch",
+        "z": "ead6865699301f71",
+        "name": "",
+        "property": "statusCode",
+        "propertyType": "msg",
+        "rules": [
+            {
+                "t": "eq",
+                "v": "401",
+                "vt": "str"
+            },
+            {
+                "t": "eq",
+                "v": "200",
+                "vt": "str"
+            }
+        ],
+        "checkall": "true",
+        "repair": false,
+        "outputs": 2,
+        "x": 510,
+        "y": 2480,
+        "wires": [
+            [
+                "8f61d0b8875635f8"
+            ],
+            [
+                "8f61d0b8875635f8",
+                "c335233ab6c181fb",
+                "eaf343d33f65a433"
+            ]
+        ]
+    },
+    {
+        "id": "8f61d0b8875635f8",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "statusCode": "",
+        "headers": {},
+        "x": 650,
+        "y": 2440,
+        "wires": []
+    },
+    {
+        "id": "d343e5a756426e17",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 290,
+        "y": 2560,
+        "wires": []
+    },
+    {
+        "id": "ffd346e14d728369",
+        "type": "comment",
+        "z": "ead6865699301f71",
+        "name": "Website - Update user goals",
+        "info": "",
+        "x": 220,
+        "y": 2420,
+        "wires": []
+    },
+    {
+        "id": "c335233ab6c181fb",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 670,
+        "y": 2500,
+        "wires": []
+    },
+    {
+        "id": "88736ac53a886c7c",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "Miliseconds to hours",
+        "func": "var response = msg.payload[0];\n\nconst hours = response.activityTime / (1000 * 60 * 60);\nconst roundedHours = Math.round(hours * 100) / 100;\nmsg.progress = roundedHours;\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 920,
+        "y": 900,
+        "wires": [
+            [
+                "4c783328.03dc2c"
+            ]
+        ]
+    },
+    {
+        "id": "fcbbab4a4da09f83",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "Query assignment",
+        "func": "//PROCESS TO QUERY THE OWNER OF THE SAFE DEVICE\nvar device = \"SAFE Device 1\"; //hardcoded value, a later implementation should receive Device ID\nmsg.topic = \"SELECT * FROM patients WHERE assignedDevice='\" + device + \"';\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 630,
+        "y": 180,
+        "wires": [
+            [
+                "d94c31876d923ae6"
+            ]
+        ]
+    },
+    {
+        "id": "d94c31876d923ae6",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "patients",
+        "x": 800,
+        "y": 180,
+        "wires": [
+            [
+                "f8adc7a4797dc664",
+                "42f3ea1118768bf6"
+            ]
+        ]
+    },
+    {
+        "id": "f8adc7a4797dc664",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 950,
+        "y": 100,
+        "wires": []
+    },
+    {
+        "id": "e3b1994b6f6ae997",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "var timestamp = Date.now();\n\nvar body = msg.payloadOriginal;\nvar patient = msg.payload[0];\nvar toTopic = \"\";\n\nconst queryBeg = \"INSERT OR REPLACE INTO total (updateTime, assignedDevice, username, goalDay, goalHours, ID) VALUES ('\" +\n    timestamp + \"','\" + patient.assignedDevice + \"','\" + patient.username + \"',\";\n    \ntoTopic += queryBeg + \"'Monday',\" + body.update.Monday + \",'\" + body.username + \"_Monday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Tuesday',\" + body.update.Tuesday + \",'\" + body.username + \"_Tuesday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Wednesday',\" + body.update.Wednesday + \",'\" + body.username + \"_Wednesday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Thursday',\" + body.update.Thursday + \",'\" + body.username + \"_Thursday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Friday',\" + body.update.Friday + \",'\" + body.username + \"_Friday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Saturday',\" + body.update.Saturday + \",'\" + body.username + \"_Saturday');\"+ \"\\n\";\ntoTopic += queryBeg + \"'Sunday',\" + body.update.Sunday + \",'\" + body.username + \"_Sunday');\"+ \"\\n\";\n    \nmsg.topic = \"BEGIN TRANSACTION;\" + \"\\n\" + toTopic + \"COMMIT;\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 840,
+        "y": 2580,
+        "wires": [
+            [
+                "2b54438c59f378f0",
+                "5a46710f8c1ccefd"
+            ]
+        ]
+    },
+    {
+        "id": "d8b949e70fa9356c",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 770,
+        "y": 2660,
+        "wires": []
+    },
+    {
+        "id": "2b54438c59f378f0",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 2520,
+        "wires": []
+    },
+    {
+        "id": "5a46710f8c1ccefd",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "batch",
+        "sql": "",
+        "name": "total",
+        "x": 1010,
+        "y": 2580,
+        "wires": [
+            [
+                "a44ceee26dbda42e"
+            ]
+        ]
+    },
+    {
+        "id": "a44ceee26dbda42e",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": true,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1150,
+        "y": 2580,
+        "wires": []
+    },
+    {
+        "id": "305d0a3d2cfa9a1d",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "getGoal",
+        "func": "msg.assignedDevice = \"SAFE Device 1\";\nvar timestamp = new Date();\nvar days = ['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];\nvar dayOfWeek = days[timestamp.getDay()]\n\nmsg.topic = \"SELECT goalHours FROM total WHERE assignedDevice='\" +msg.assignedDevice+ \"' AND goalDay='\"+dayOfWeek+\"';\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 320,
+        "y": 900,
+        "wires": [
+            [
+                "077567708f94da73"
+            ]
+        ]
+    },
+    {
+        "id": "077567708f94da73",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "total",
+        "x": 450,
+        "y": 900,
+        "wires": [
+            [
+                "736317c57f3352f3",
+                "74965b298227eb2a"
+            ]
+        ]
+    },
+    {
+        "id": "736317c57f3352f3",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "getProg",
+        "func": "//PROCESS TO VALIDATE THE RECEIVED REQUEST\nvar response = msg.payload;\nmsg.max = response[0].goalHours\n\nconst currentDateOslo = new Date().toLocaleString(\"en-US\", { timeZone: \"Europe/Oslo\" });\nconst currentDate = new Date(currentDateOslo);\ncurrentDate.setHours(0, 0, 0, 0);\nconst startOfDayTimestamp = currentDate.getTime();\n\ncurrentDate.setHours(23, 59, 59, 999);\nconst endOfDayTimestamp = currentDate.getTime();\n\nmsg.topic = \"SELECT SUM(activityTime) as activityTime FROM activities WHERE timestamp > \" +startOfDayTimestamp+ \" AND timestamp < \" +endOfDayTimestamp+ \" AND device='\" +msg.assignedDevice+ \"' AND activity != 'Still';\";\n\nreturn msg;\n",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 580,
+        "y": 900,
+        "wires": [
+            [
+                "84f7281426eebe07"
+            ]
+        ]
+    },
+    {
+        "id": "84f7281426eebe07",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "activities",
+        "x": 720,
+        "y": 900,
+        "wires": [
+            [
+                "699cf4a76bd244e5",
+                "88736ac53a886c7c"
+            ]
+        ]
+    },
+    {
+        "id": "699cf4a76bd244e5",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 870,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "74965b298227eb2a",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 570,
+        "y": 860,
+        "wires": []
+    },
+    {
+        "id": "737967cab7d66347",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "GetActivities",
+        "func": "const results = msg.payload;\nmsg.username = results.username;\n\nvar weekRange = results.week.split('-'); \nconst year = weekRange[0];\nconst week = weekRange[1].slice(1);\n\nmsg.year = year;\nmsg.week = week;\n//node.warn(\"year: \"+year+\" - week: \"+week)\n\nconst weekTimestamps = getWeekTimestamps(year, week);\n\nmsg.topic = \"SELECT fullname, activity, SUM(activityTime) as totalActivityTime FROM activities\"+\n            \" WHERE timestamp > \" + weekTimestamps.start + \" AND timestamp < \" + weekTimestamps.end +\n            \" AND username = '\" + msg.username + \"' GROUP BY activity;\";\n\nfunction getWeekTimestamps(year, week) {\n  const januaryFirst = new Date(year, 0, 1);\n  const januaryFirstDay = januaryFirst.getDay();\n  const daysToMonday = januaryFirstDay === 0 ? 1 : 8 - januaryFirstDay;\n  const startOfWeek = new Date(year, 0, daysToMonday + 7 * (week - 1));\n  const endOfWeek = new Date(startOfWeek);\n  endOfWeek.setDate(startOfWeek.getDate() + 6);\n  \n  return {\n    start: startOfWeek.getTime(),\n    end: endOfWeek.getTime(),\n  };\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 350,
+        "y": 1060,
+        "wires": [
+            [
+                "74f8a7a024f1bcd2",
+                "7091a5e2555307e2"
+            ]
+        ]
+    },
+    {
+        "id": "6e6f393f396e1343",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1070,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "74f8a7a024f1bcd2",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "activities",
+        "x": 500,
+        "y": 1060,
+        "wires": [
+            [
+                "222b4202f001df19"
+            ]
+        ]
+    },
+    {
+        "id": "7091a5e2555307e2",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 490,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "222b4202f001df19",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "GetTotal",
+        "func": "if(msg.payload.length > 0){\n    msg.activities = msg.payload;\n}\nelse{\n    //ADD ACTIVITIES DEFAULTED TO ZERO\n}\nmsg.topic = \"SELECT assignedDevice as device, SUM(goalHours) as TotalGoalHours FROM total\"+\n            \" WHERE username = '\" + msg.username + \"' GROUP BY assignedDevice;\";\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 660,
+        "y": 1060,
+        "wires": [
+            [
+                "c6554682bf6a196c"
+            ]
+        ]
+    },
+    {
+        "id": "c6554682bf6a196c",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "total",
+        "x": 790,
+        "y": 1060,
+        "wires": [
+            [
+                "a9934fe134769ba5",
+                "22bcdfec87bc90e2"
+            ]
+        ]
+    },
+    {
+        "id": "a9934fe134769ba5",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "const goal = msg.payload;\nmsg.payload = {};\nconst activities = msg.activities;\nvar activityTime, TotalGoalHours;\n\nif(goal.length > 0){\n    TotalGoalHours = goal[0].TotalGoalHours;\n}\nelse{\n    TotalGoalHours = 1;\n}\n\nfor(i=0; i < activities.length; i++){\n    //node.warn(activities[i].activity)\n    if(activities[i].activity == \"Random\"){\n        activityTime = activities[i].totalActivityTime;\n        totalActivityPercentage = getActivityPercentages(TotalGoalHours,activityTime);\n        msg.payload.random = totalActivityPercentage;\n    }\n    else{\n        if(activities[i].activity == \"Hand Up\"){\n            activityTime = activities[i].totalActivityTime;\n            totalActivityPercentage = getActivityPercentages(TotalGoalHours,activityTime);\n            msg.payload.handup = totalActivityPercentage;\n        }\n        else{\n            if(activities[i].activity == \"Brushing Teeth\"){\n                activityTime = activities[i].totalActivityTime;\n                totalActivityPercentage = getActivityPercentages(TotalGoalHours,activityTime);\n                msg.payload.brushingteeth = totalActivityPercentage;\n            }\n            else{\n                if(activities[i].activity == \"Washing Hands\"){\n                    activityTime = activities[i].totalActivityTime;\n                    totalActivityPercentage = getActivityPercentages(TotalGoalHours,activityTime);\n                    msg.payload.washinghands = totalActivityPercentage;\n                }\n                else{\n                    if(activities[i].activity == \"Still\"){\n                        activityTime = activities[i].totalActivityTime;\n                        var hourss = activityTime / (1000 * 60 * 60);\n                        var roundedHourss = Math.round(hourss * 100) / 100;\n                        msg.payload.still = roundedHourss;\n                    }\n                }\n            }\n        }\n    }\n}\n\nif(!msg.payload.random){\n    msg.payload.random = 0;\n}\nif(!msg.payload.handup){\n    msg.payload.handup = 0;\n}\nif(!msg.payload.brushingteeth){\n    msg.payload.brushingteeth = 0;\n}\nif(!msg.payload.washinghands){\n    msg.payload.washinghands = 0;\n}\nif(!msg.payload.still){\n     msg.payload.still = 0;\n}\n\nif(TotalGoalHours == 1){\n    TotalGoalHours = 0;\n}\nmsg.payload.legend = \"Activity detail for patient: \" + activities[0].fullname + \", for week \" + msg.week + \" of \" + msg.year;\nmsg.payload.subtitle = \"Total weekly activity GOAL: \" + TotalGoalHours + \" hours. Recorded Still time: \" + msg.payload.still + \" hours.\"\nnode.warn(msg.payload.legend)\n\n\nfunction getActivityPercentages(Goal, totalActivityTime, decimalPlaces = 2) {\n    if (Goal === 0) {\n        return 0;\n    }\n    let hours = totalActivityTime / (1000 * 60 * 60);\n    let roundedHours = Math.round(hours * 100) / 100;\n    let percentage = Math.round((roundedHours * 100) / Goal * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);\n    return percentage;\n}\n\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 940,
+        "y": 1060,
+        "wires": [
+            [
+                "6e6f393f396e1343",
+                "1be3c69904e357db"
+            ]
+        ]
+    },
+    {
+        "id": "22bcdfec87bc90e2",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 930,
+        "y": 1020,
+        "wires": []
+    },
+    {
+        "id": "5f2e8e08e3ffdedb",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "GetActivities",
+        "func": "const results = msg.payload;\nmsg.username = results.username;\n\nconst lastWeekTimestamps = getLastWeekTimestamps();\n\nmsg.topic = \"SELECT fullname, activity, activityTime, timestamp FROM activities\"+\n            \" WHERE timestamp > \" + lastWeekTimestamps.start + \" AND timestamp < \" + lastWeekTimestamps.end +\n            \" AND username = '\" + msg.username + \"';\";\n\nfunction getLastWeekTimestamps() {\n  const today = new Date();\n  const startOfLastWeek = new Date(today);\n  startOfLastWeek.setDate(today.getDate() - today.getDay() - 6);\n  startOfLastWeek.setHours(0, 0, 0, 0);\n  const endOfToday = new Date(today);\n  endOfToday.setHours(23, 59, 59, 999);\n\n  return {\n    start: startOfLastWeek.getTime(),\n    end: endOfToday.getTime(),\n  };\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 370,
+        "y": 1240,
+        "wires": [
+            [
+                "bd458c1043837259",
+                "3c82096d8ede1597"
+            ]
+        ]
+    },
+    {
+        "id": "bd458c1043837259",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "activities",
+        "x": 520,
+        "y": 1240,
+        "wires": [
+            [
+                "10e125fd874dc896"
+            ]
+        ]
+    },
+    {
+        "id": "10e125fd874dc896",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "GetTotal",
+        "func": "if(msg.payload.length > 0){\n    const activities = msg.payload;\n    msg.fullname = activities[0].fullname;\n    const summarizedArray = summarizeActivities(activities);\n    msg.activities = summarizedArray;\n}\nelse{\n    //ADD ACTIVITIES DEFAULTED TO ZERO\n}\nmsg.topic = \"SELECT assignedDevice as device, goalHours, goalDay FROM total\"+\n            \" WHERE username = '\" + msg.username + \"';\";\n\n/////////////////////////////////////////////////////////////////////////////////////////////////////////////////\n\nfunction summarizeActivities(data) {\n  const activities = [\"random\", \"handup\", \"brushingteeth\", \"washinghands\", \"still\"];\n\n  const summarizedData = {};\n\n  data.forEach(entry => {\n    const date = new Date(entry.timestamp);\n    const dayOfWeek = date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Europe/Oslo' });\n\n    if (!summarizedData[dayOfWeek]) {\n      summarizedData[dayOfWeek] = {\n        day: dayOfWeek,\n        ...Object.fromEntries(activities.map(activity => [activity, 0])),\n        totalActivityTime: 0,\n      };\n    }\n\n    const activityTimeInMinutes = entry.activityTime / (1000 * 60) || 0; // Convert milliseconds to minutes, default to zero\n    const activityKey = entry.activity.toLowerCase().replace(/\\s+/g, ''); // Standardize activity names\n\n    summarizedData[dayOfWeek][activityKey] += activityTimeInMinutes;\n    summarizedData[dayOfWeek].totalActivityTime += activityTimeInMinutes;\n  });\n\n  // Round up the activity time to 2 digits\n  Object.values(summarizedData).forEach(dayData => {\n    activities.forEach(activity => {\n      const activityKey = activity.toLowerCase().replace(/\\s+/g, ''); // Standardize activity names\n      dayData[activity] = parseFloat(dayData[activityKey].toFixed(2));\n    });\n  });\n\n  return Object.values(summarizedData);\n}\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 680,
+        "y": 1240,
+        "wires": [
+            [
+                "cd554e25c4ec55fe"
+            ]
+        ]
+    },
+    {
+        "id": "cd554e25c4ec55fe",
+        "type": "sqlite",
+        "z": "ead6865699301f71",
+        "mydb": "e404c4b76a6da940",
+        "sqlquery": "msg.topic",
+        "sql": "",
+        "name": "total",
+        "x": 810,
+        "y": 1240,
+        "wires": [
+            [
+                "d08409e7e1742267"
+            ]
+        ]
+    },
+    {
+        "id": "d08409e7e1742267",
+        "type": "function",
+        "z": "ead6865699301f71",
+        "name": "",
+        "func": "msg.goal = msg.payload;\nmsg.payload = {};\nmsg.payload.data = JSON.stringify(msg.activities);\n\n\nmsg.payload.legend = \"Last 7 day activity detail for patient: \" + msg.fullname;\n//msg.payload.subtitle = \"Total weekly activity GOAL: \" + TotalGoalHours + \" hours. Recorded Still time: \" + msg.payload.still + \" hours.\"\nnode.warn(msg.payload.legend)\n\nreturn msg;",
+        "outputs": 1,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 960,
+        "y": 1240,
+        "wires": [
+            [
+                "503dfe70c2f9b151",
+                "045272d52abb82aa"
+            ]
+        ]
+    },
+    {
+        "id": "3c82096d8ede1597",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 510,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "503dfe70c2f9b151",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1090,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "25079f415e589f8b",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1270,
+        "y": 1200,
+        "wires": []
+    },
+    {
+        "id": "4df528611770897d",
+        "type": "debug",
+        "z": "ead6865699301f71",
+        "name": "",
+        "active": false,
+        "tosidebar": true,
+        "console": false,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1210,
+        "y": 1120,
+        "wires": []
+    },
+    {
+        "id": "b1f135e4092e1d7b",
+        "type": "http response",
+        "z": "ead6865699301f71",
+        "name": "",
+        "x": 1250,
+        "y": 1240,
+        "wires": []
+    },
+    {
+        "id": "e404c4b76a6da940",
+        "type": "sqlitedb",
+        "db": "/data/sqlitedb/safe.db",
+        "mode": "RWC"
+    }
+]
