@@ -221,7 +221,7 @@ static void printPredictedClass(neuton_u16_t predictedClass,
 static const char* getClassName(neuton_u16_t classIndex) {
   switch (classIndex) {
     case BRUSHING_TEETH_CLASS: return "Brushing Teeth";
-    case HAND_UP_CLASS: return "Hand up";
+    case HAND_UP_CLASS: return "Hand Flexion/Extension";
     case WASHING_HANDS_CLASS: return "Washing Hands ";
     case STILL_CLASS: return "Still";
     case RANDOM_CLASS: return "Random";
