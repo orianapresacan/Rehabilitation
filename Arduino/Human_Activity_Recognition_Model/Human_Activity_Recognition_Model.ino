@@ -251,69 +251,28 @@ void sendDataViaBLE() {
     return;
   }
 
-  String jsonData = "{";
-  // Add fields to the JSON message only if their values are not-zero
-  if (activityDurations.random != 0) {
-    jsonData += "\"rd\":" + String(activityDurations.random);
-  }
-  if (activityDurations.handUp != 0) {
-    if (activityDurations.random != 0) {
-      jsonData += ",";
+  // Define an array of activity names and corresponding durations
+  const char* activities[] = {"rd", "hU", "bT", "wH", "st"};
+  uint32_t durations[] = {activityDurations.random, activityDurations.handUp, activityDurations.brushingTeeth, activityDurations.washingHands, activityDurations.still};
+
+  // Loop through the array and send each element separately
+  for (size_t i = 0; i < sizeof(activities) / sizeof(activities[0]); ++i) {
+    // Check if the duration is not zero before sending
+    if (durations[i] != 0) {
+      // Construct a JSON element
+      String jsonData = "{\"" + String(activities[i]) + "\":" + String(durations[i]) + "}";
+      // Send the element as a BLE characteristic value
+      customCharacteristic.writeValue(jsonData.c_str());
     }
-    jsonData += "\"hU\":" + String(activityDurations.handUp);
-  }
-  if (activityDurations.brushingTeeth != 0) {
-    if (activityDurations.random != 0 || activityDurations.handUp != 0) {
-      jsonData += ",";
-    }
-    jsonData += "\"bT\:" + String(activityDurations.brushingTeeth);
-  }
-  if (activityDurations.washingHands != 0) {
-    if (activityDurations.random != 0 || activityDurations.handUp != 0 || activityDurations.brushingTeeth != 0) {
-      jsonData += ",";
-    }
-    jsonData += "\"wH\":" + String(activityDurations.washingHands);
-  }
-  if (activityDurations.still != 0) {
-    if (activityDurations.random != 0 || activityDurations.handUp != 0 || activityDurations.brushingTeeth != 0 || activityDurations.washingHands != 0) {
-      jsonData += ",";
-    }
-    jsonData += "\"st\":" + String(activityDurations.still);
-  }
-
-  jsonData += "}";
-
-  // Calculate the remaining size of the JSON string
-  size_t remainingSize = jsonData.length();
-
-  // Start index for slicing the JSON string
-  size_t startIndex = 0;
-
-  // While there is remaining data to send
-  while (remainingSize > 0) {
-    // Calculate the chunk size (up to 20 bytes)
-    size_t chunkSize = min(remainingSize, 20);
-
-    // Extract a chunk of the JSON string
-    String chunkData = jsonData.substring(startIndex, startIndex + chunkSize);
-
-    // Send the chunk as a BLE characteristic value
-    customCharacteristic.writeValue(chunkData.c_str());
-
-    // Update the remaining size and start index
-    remainingSize -= chunkSize;
-    startIndex += chunkSize;
   }
 
   Serial.println("Sent");
-  
+
   // If data is successfully sent, reset the struct
-  if (jsonData != "{}") {
-    // Only reset if there's valid data in the JSON
-    memset(&activityDurations, 0, sizeof(activityDurations));
-  }
+  memset(&activityDurations, 0, sizeof(activityDurations));
   lastDataSentTime = millis();
 }
+
 
 // ///////////////////////////////////////////////////////////////////////////
 
