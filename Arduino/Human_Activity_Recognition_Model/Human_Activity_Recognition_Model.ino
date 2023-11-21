@@ -9,7 +9,7 @@
 
 // Define a custom service and characteristic UUID
 BLEService customService("00001101-0000-1000-8000-00805f9b34fb");  // Custom service UUID
-BLECharacteristic customCharacteristic("00002101-0000-1000-8000-00805f9b34fb", BLERead | BLEBroadcast, 20);
+BLECharacteristic customCharacteristic("00002101-0000-1000-8000-00805f9b34fb", BLERead | BLENotify, 20);
 
 // C:\Users\Oriana\Documents\Arduino\libraries\Arduino_BHY2\src\BoschSensortec.h -> #define WORK_BUFFER_SIZE    64
 // ///////////////////////////////////////////////////////////////////////////
